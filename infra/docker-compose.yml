@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db_post:
+    image: postgres:13.0-alpine
+    restart: always
+    volumes:
+      - /var/lib/postgresql/data/
+    env_file:
+      - ./.env
+  
+  web:
+    build:
+      context: ../
+      dockerfile: ./Dockerfile
+    restart: always
+    volumes:
+      - ../static:/code/static
+    depends_on:
+      - db_post
+    env_file:
+      - ./.env
+  
+  nginx:
+    image: nginx:1.21.3-alpine
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./logs/:/var/log/nginx/
+      - ../static:/var/html/static/
